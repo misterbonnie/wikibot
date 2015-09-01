@@ -5,12 +5,15 @@ import datetime
 import email.utils
 import wikichanges
 import smtplib
+import re
 import time
 
 from email.mime.text import MIMEText
 
 SENDER = email.utils.formataddr(('WikiBot', 'bonniek@ookpik.fnal.gov'))
 RECIPIENT = email.utils.formataddr(('SLAM', 'bonniek@fnal.gov'))
+LIST = ''
+FROM = ''
 
 POLL_TIME = 86400
 
@@ -31,12 +34,14 @@ class WikiMail:
     
         for msg in self.wc.poll():
             print msg
-            body = body + '\n' +  msg
+            msg = re.sub(r'&diff.*$', '', msg)
+            msg = re.sub(r'\ [0-9].*\ ago', '', msg)
+            body = body + '\n\n' +  msg
 
         e = MIMEText(body)
         e['Subject'] = 'FEF Wiki Changes Today'
-        e['From'] = 'bonniek@ookpik.fnal.gov'
-        e['To'] = 'bonniek@fnal.gov'
+        e['From'] = FROM
+        e['To'] = LIST
 
         s = smtplib.SMTP('localhost')
         s.sendmail(SENDER, [RECIPIENT], e.as_string())
@@ -54,7 +59,7 @@ if __name__ == '__main__':
     k = options.gapi_key
     u = options.url
 
-    wc = wikichanges.WikiChanges(u, emit_start=True, max_age=datetime.timedelta(hours=8), gapi_key=k)
+    wc = wikichanges.WikiChanges(u, emit_start=True, max_age=datetime.timedelta(hours=24), gapi_key=k)
 
     s = WikiMail(wc)
 

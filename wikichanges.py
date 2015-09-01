@@ -35,12 +35,14 @@ class WikiChanges(object):
             return url
 
     def poll(self):
-        r = requests.get(self.url)
+        already_have = []
+        r = requests.get(self.url, verify=False)
         d = xmltodict.parse(r.text)
         entries = d['feed']['entry']
         entries.reverse()
         now = datetime.datetime.utcnow()
         now = now.replace(tzinfo=pytz.utc, microsecond=0)
+        print entries
         for e in entries:
             url = e['link']['@href']
             name = e['author']['name']
@@ -57,11 +59,14 @@ class WikiChanges(object):
                     if self.max_age is not None:
                         if age > self.max_age:
                             continue
-                    yield msg
+                    if (e['title'], e['author']['name']) not in already_have:
+                        # for my thing i just want the pages not the diffs
+                        already_have.append((e['title'], e['author']['name']))
+                        yield msg
         self.synced = True
 
 if __name__ == '__main__':
-    wc = WikiChanges(sys.argv[1], emit_start=True, max_age=datetime.timedelta(hours=2))
+    wc = WikiChanges(sys.argv[1], emit_start=True, max_age=datetime.timedelta(hours=24))
     while True:
         for msg in wc.poll():
             print msg
