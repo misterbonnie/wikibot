@@ -10,8 +10,8 @@ import time
 
 from email.mime.text import MIMEText
 
-SENDER = email.utils.formataddr(('WikiBot', 'bonniek@ookpik.fnal.gov'))
-RECIPIENT = email.utils.formataddr(('SLAM', 'bonniek@fnal.gov'))
+SENDER = email.utils.formataddr(('WikiBot', ''))
+RECIPIENT = email.utils.formataddr(('SLAM', ''))
 LIST = ''
 FROM = ''
 
